@@ -23,7 +23,7 @@ class Scraper(object):
 
     def cache_filename(self, url):
         return hashlib.md5(url).hexdigest()
-    
+
     def fetch_page(self, url):
         cache_filepath = os.path.join(CACHE_PATH, self.cache_filename(url))
         if not os.path.isfile(cache_filepath):
@@ -32,7 +32,7 @@ class Scraper(object):
             with open(cache_filepath, 'wb') as fh:
                 fh.write(resp.content)
         return cache_filepath
-    
+
     def make_soup(self, url):
         filepath = self.fetch_page(url)
         with open(filepath, 'rb') as fh:
@@ -68,7 +68,7 @@ class Album(object):
         self._title = title
         self._artist = artist
         self._url = url
-        self._personnel = [] 
+        self._personnel = []
 
     def describe(self):
         print(u"'{title}' by {artist}\n"
@@ -86,7 +86,7 @@ class Album(object):
     @property
     def url(self):
         return self._url
-    
+
     @url.setter
     def url(self, url):
         self._url = url
