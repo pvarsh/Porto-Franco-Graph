@@ -7,8 +7,60 @@ import functools
 import requests
 from bs4 import BeautifulSoup
 
-CATALOG_URL = "http://www.portofrancorecords.com/albums-and-store/"
 CACHE_PATH = "cache"
+
+class Catalog(object):
+
+    def add_pfr(self):
+        scraper = PortoFrancoScraper()
+        self._albums = scraper.get_albums()
+
+    @property
+    def albums(self):
+        return self._albums
+
+class Scraper(object):
+
+    def cache_filename(self, url):
+        return hashlib.md5(url).hexdigest()
+    
+    def fetch_page(self, url):
+        cache_filepath = os.path.join(CACHE_PATH, self.cache_filename(url))
+        if not os.path.isfile(cache_filepath):
+            resp = requests.get(url)
+            resp.raise_for_status()
+            with open(cache_filepath, 'wb') as fh:
+                fh.write(resp.content)
+        return cache_filepath
+    
+    def make_soup(self, url):
+        filepath = self.fetch_page(url)
+        with open(filepath, 'rb') as fh:
+            soup = BeautifulSoup(fh)
+        return soup
+
+class PortoFrancoScraper(Scraper):
+
+    CATALOG_URL = "http://www.portofrancorecords.com/albums-and-store/"
+
+    def scrape_album_div(self, div):
+        title = div.find("a", class_="album-title")
+        name = title.text.strip()
+        url = title.get('href')
+        artist = div.find("span", class_="by-artist").text.strip()
+        artist = artist[3:] if artist[:3] == "by " else artist
+        return (name, artist, url)
+
+    def get_albums(self):
+        soup = self.make_soup(self.CATALOG_URL)
+        album_divs = soup.find_all("div", class_="album")
+        albums = []
+        for div in album_divs:
+            title, artist, url = self.scrape_album_div(div)
+            album = Album(title, artist, url)
+            albums.append(album)
+        return albums
+
 
 class Album(object):
 
@@ -52,7 +104,7 @@ class Album(object):
         return self._artist
 
     def personnel_from_page(self):
-        soup = make_soup(self.url)
+        soup = self.make_soup(self.url)
         ul = soup.find("ul", class_="personnel")
         list_items = ul.find_all("li")
         for li in list_items:
@@ -90,48 +142,10 @@ class Musician(object):
         instruments = [instrument for instrument in instruments if instrument]
         return cls(name, instruments)
 
-def cache_filename(url):
-    return hashlib.md5(url).hexdigest()
-
-def fetch_page(url):
-    cache_filepath = os.path.join(CACHE_PATH, cache_filename(url))
-    if not os.path.isfile(cache_filepath):
-        resp = requests.get(url)
-        resp.raise_for_status()
-        with open(cache_filepath, 'wb') as fh:
-            fh.write(resp.content)
-    return cache_filepath
-
-def make_soup(url):
-    filepath = fetch_page(url)
-    with open(filepath, 'rb') as fh:
-        soup = BeautifulSoup(fh)
-    return soup
-
-def scrape_album_div(div):
-    title = div.find("a", class_="album-title")
-    name = title.text.strip()
-    url = title.get('href')
-    artist = div.find("span", class_="by-artist").text.strip()
-    artist = artist[3:] if artist[:3] == "by " else artist
-    return (name, artist, url)
-
-def get_albums(url):
-    soup = make_soup(url)
-    album_divs = soup.find_all("div", class_="album")
-    albums = []
-    for div in album_divs:
-        title, artist, url = scrape_album_div(div)
-        album = Album(title, artist, url)
-        albums.append(album)
-    return albums
-
-def scrape_album(url):
-    resp = requests.get(url)
-    soup = BeautifulSoup(resp.content)
-    return soup.find("h1", class_="entry-title")
 
 if __name__ == "__main__":
-    albums = get_albums(CATALOG_URL)
-    for album in albums:
-        album.personnel_from_page()
+    catalog = Catalog()
+    catalog.add_pfr()
+#     albums = get_albums(CATALOG_URL)
+#     for album in albums:
+#         album.personnel_from_page()
