@@ -19,12 +19,11 @@ class Album(object):
         self._personnel = [] 
 
     def describe(self):
-        print("'{title}' by {artist}\n"
-              "Personnel: "
+        print(u"'{title}' by {artist}\n"
+              u"Personnel: "
               .format(title=self.title, artist=self.artist))
         for musician in self.personnel:
-            print musician
-
+            print(musician)
     @property
     def instruments(self):
         instruments = set()
@@ -67,7 +66,10 @@ class Musician(object):
         self._instruments = instruments
 
     def __str__(self):
-        return "Name: {}, instruments: {}".format(self.name, self.instruments)
+        return unicode(self).encode('utf-8')
+
+    def __unicode__(self):
+        return u"Name: {}, instruments: {}".format(self.name, self.instruments)
 
     @property
     def instruments(self):
