@@ -13,6 +13,12 @@ CACHE_PATH = "cache"
 
 class Catalog(object):
 
+    def __unicode__(self):
+        return "\n".join([u"'{}' by '{}'".format(album.title, album.artist) for album in self.albums])
+
+    def __str__(self):
+        return unicode(self).encode("utf-8")
+
     def add_pfr(self):
         scraper = PortoFrancoScraper()
         self._albums = scraper.get_albums()
@@ -93,12 +99,19 @@ class Album(object):
         self._url = url
         self._personnel = []
 
+    def __unicode__(self):
+        return(u"{} by {}".format(self._title, self._artist))
+
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
     def describe(self):
         print(u"'{title}' by {artist}\n"
               u"Personnel: "
               .format(title=self.title, artist=self.artist))
         for musician in self.personnel:
             print(musician)
+
     @property
     def instruments(self):
         instruments = set()
