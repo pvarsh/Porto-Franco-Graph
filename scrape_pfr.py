@@ -4,6 +4,8 @@ import hashlib
 import os
 import functools
 
+from collections import defaultdict
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -18,6 +20,27 @@ class Catalog(object):
     @property
     def albums(self):
         return self._albums
+
+    def delete_albums_by_artist(self, artist):
+        self._albums = [album for album in self._albums if album.artist != artist]
+
+    @property
+    def musician_names(self):
+        musicians = set()
+        for album in self.albums:
+            for musician in album.personnel:
+                print musician.name
+                musicians.add(musician.name)
+
+        return musicians
+
+    @property
+    def musician_credits(self):
+        musicians = defaultdict(list)
+        for album in self.albums:
+            for musician in album.personnel:
+                musicians[musician.name].append(album.title)
+        return musicians
 
 class Scraper(object):
 
