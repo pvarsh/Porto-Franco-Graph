@@ -22,6 +22,8 @@ class Catalog(object):
     def add_pfr(self):
         scraper = PortoFrancoScraper()
         self._albums = scraper.get_albums()
+        for album in self.albums:
+            album.personnel_from_page()
 
     @property
     def albums(self):
@@ -90,6 +92,15 @@ class PortoFrancoScraper(Scraper):
             albums.append(album)
         return albums
 
+    def personnel_from_page(self, url):
+        soup = self.make_soup(url)
+        ul = soup.find("ul", class_="personnel")
+        list_items = ul.find_all("li")
+        personnel = []
+        for li in list_items:
+            musician = Musician.from_pfr_list_item(li)
+            personnel.append(musician)
+        return personnel
 
 class Album(object):
 
@@ -140,12 +151,8 @@ class Album(object):
         return self._artist
 
     def personnel_from_page(self):
-        soup = self.make_soup(self.url)
-        ul = soup.find("ul", class_="personnel")
-        list_items = ul.find_all("li")
-        for li in list_items:
-            musician = Musician.from_pfr_list_item(li)
-            self._personnel.append(musician)
+        scraper = PortoFrancoScraper()
+        self._personnel = scraper.personnel_from_page(self.url)
 
 class Musician(object):
 
