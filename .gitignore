@@ -2,4 +2,5 @@
 *.pyc
 *.csv
 *.json
+lib/*
 cache/*
