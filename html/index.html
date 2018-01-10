@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+  <head>
+    <title>My first network</title>
+    <style type="text/css">
+      Body {
+        font: 10pt arial;
+      }
+        #mynetwork {
+          width: 800px;
+          height: 800px;
+          border: 1px solid lightgray;
+          background-color: #FFFFFF;
+      }
+    </style>
+  <script type="text/javascript" src="lib/vis-4.21.0/dist/vis.js"></script>
+  <link href="lib/vis-4.21.0/dist/vis-network.min.css" rel="stylesheet" type="text/css" />
+
+  <script type="text/javascript">
+    var nodes = null;
+    var edges = null;
+    var network = null;
+    
+    function draw() {
+      nodes = [
+        {id: 1, shape: 'image', image: 'images/big_lift.jpg'},
+        {id: 2, shape: 'image', image: 'images/ngt1.jpg'}
+        ];
+      edges = [
+        {from: 1, to: 2, title: 'Darren', labelHighlightBold: true},
+        {from: 1, to: 2, title: 'Daniel'},
+        {from: 2, to: 1}
+        ];
+      var container = document.getElementById('mynetwork');
+      var data = {
+        nodes: nodes,
+        edges: edges
+      };
+      var options = {
+        nodes: {
+          borderWidht:4,
+          size:30,
+          color: {
+            border: '#222222',
+            background: '#666666'
+          },
+          font:{color:'#aaaaaa'}
+        },
+        edges: {
+          color: 'lightgray'
+        }
+      };
+      network = new vis.Network(container, data, options);
+    }
+  </script>
+  </head>
+  <body onload="draw()">
+    <div id="mynetwork"></div>
+  </body>
+</html>
